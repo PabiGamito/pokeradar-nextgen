@@ -26,6 +26,9 @@
       #map {
         z-index: 0;
       }
+      .pokemonLabel{
+        
+      }
     </style>
 
     <!-- <nav>
@@ -40,11 +43,15 @@
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+    <!-- Include Leaflet Label -->
+    <link href='libs/leaflet.label.css' rel='stylesheet' />
+    <script type="text/javascript" src="libs/leaflet.label.js"></script>
     <!-- Include jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <!-- Include Dexie -->
-    <!-- <script src="https://npmcdn.com/dexie@latest/dist/dexie.js"></script> -->
+    <script src="https://npmcdn.com/dexie@latest/dist/dexie.js"></script>
 
+    <script type="text/javascript" src="localpokemonDB.js"></script>
     <script type="text/javascript" src="pokeradar.js"></script>
 
   </body>

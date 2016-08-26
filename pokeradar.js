@@ -2,32 +2,14 @@
 // LOAD MAP //
 // ******** //
 
-pokemonDB = {
-	6: "charizard",
-	9: "blastoise",
-	26: "raichu",
-	38: "ninetales",
-	40: "wigglytuff",
-	55: "golduck",
-	59: "arcanine",
-	62: "polywrath",
-	94: "gengar",
-	103: "exeggutor",
-	108: "lickitung",
-	130: "gyarados",
-	131: "lapras",
-	143: "snorlax",
-	149: "dragonite",
-	151: "new"
-};
-
 L.mapbox.accessToken = 'pk.eyJ1IjoicGFiaSIsImEiOiJjaXNhZGRzZWIwMDF4Mm5wdnk5YjVtcjM2In0.UzT4hfiPhDpV8EjbPhG5BQ';
 var map = L.mapbox.map( 'map', 'mapbox.streets' )
 	.setView( [ 40.7829, -73.9654 ], 11 );
 
-// loadedPokemons: {id: "1472225581-6-40.77319326--74.22933051", marker: markerObject, popup: popupObject}
-var loadedPokemons = [];
+// Minzoom to prevent to big surface to scan error
+map.options.minZoom = 3;
 
+var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
 var total_pokemons = 0;
 
 function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLongitude ) {
@@ -57,7 +39,7 @@ function pokemonIsLegit( pokemonData ) {
 	var rarePokemon = true; //rarePokemon( pokemonData.pokemonId );
 	vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
 
-	if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 2 ) {
+	if ( rarePokemon && vote_ratio > 0.70 && pokemonData.upvotes > 1 ) {
 		return true;
 	} else if ( !rarePokemon ) {
 		return true;
@@ -87,46 +69,48 @@ function timeLeft( pokemonCreatedTs ) {
 	return timeLeft;
 }
 
-function pokemonLoaded( id ) {
-	for ( var i = 0; i < loadedPokemons.length; i++ ) {
-		if ( loadedPokemons[ i ].id === id ) {
-			return true;
-		}
-	}
-	return false;
-}
-
-function popupData( pokemonId, createdAt, upVotes, downVotes ) {
-	return pokemonDB[ pokemonId ].capitalize() + " - " + timeLeft( createdAt ) + " - " + upVotes + "/" + ( downVotes + upVotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%";
+function loadPopupContent( marker, pokemonId, upVotes, downVotes ) {
+	pokemonDB.pokemons.get( pokemonId ).then( function( pokemon ) {
+		vote_ratio = upVotes / ( downVotes + upVotes );
+		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" + upVotes + "/" + ( downVotes + upVotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" );
+	} );
 }
 
 function addPokemonToMap( pokemonData ) {
 	// pokemonData = {latitude: 40, longitude: -70, pokemonId: 48}
-	vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
-	if ( !pokemonLoaded( pokemonData.id ) ) {
-		total_pokemons += 1;
-		document.title = total_pokemons + " - Pokemon Radar Map";
+	pokemonDB.loadedPokemons.get( pokemonData.id ).then( function( pokemon ) {
+		if ( !pokemon ) {
+			total_pokemons += 1;
+			document.title = total_pokemons + " - Pokemon Radar Map";
 
-		var marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ] ).addTo( map );
-		var popup = marker.bindPopup( popupData( pokemonData.pokemonId, pokemonData.created, pokemonData.upvotes, pokemonData.downvotes ) );
+			var marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
+				icon: L.icon( {
+					iconUrl: 'img/icons/' + pokemonData.pokemonId + '.png',
+					iconSize: [ 64, 64 ]
+				} )
+			} ).bindLabel( timeLeft( pokemonData.created ), {
+				noHide: true,
+				offset: [ -20, 30 ],
+				className: "pokemonLabel"
+			} ).addTo( map );
+			marker.bindPopup( "Loading" );
+			loadPopupContent( marker, pokemonData.pokemonId, pokemonData.upvotes, pokemonData.downvotes );
 
-		loadedPokemons.push( {
-			"id": pokemonData.id,
-			"pokemonId": pokemonData.pokemonId,
-			"created": pokemonData.created,
-			"upvotes": upVotes,
-			"downvotes": downVotes,
-			"marker": marker,
-			"popup": popup
-		} );
+			pokemonDB.loadedPokemons.put( {
+				"id": pokemonData.id,
+				"pokemonId": pokemonData.pokemonId,
+				"created": pokemonData.created,
+				"marker": marker
+			} );
 
-	}
+		}
+	} );
 }
 
 function refreshPokemons() {
-	Object.keys( pokemonDB ).forEach( function( pokemonId ) {
-		findPokemon( pokemonId, lat().min, lat().max, lng().min, lng().max );
-	} );
+	for ( var i = 0; i < pokemonsToShow.length; i++ ) {
+		findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max );
+	}
 }
 
 function lat() {
@@ -153,8 +137,27 @@ window.setInterval( function() {
 	updateTimeLeft();
 }, 1000 );
 
+map.on( 'moveend', function() {
+	refreshPokemons();
+} );
+
 function updateTimeLeft() {
-	for ( var i = 0; i < loadedPokemons.length; i++ ) {
-		loadedPokemons[ i ].created;
-	}
+	pokemonDB.loadedPokemons
+		.where( "created" )
+		.between( Math.floor( Date.now() / 1000 ) - 60 * 15, Math.floor( Date.now() / 1000 ) )
+		.toArray()
+		.then( function( pokemons ) {
+			console.log( "Timeleft Pokemons", pokemons );
+		} );
+}
+
+function deleteExpiredPokemons() {
+	pokemonDB.loadedPokemons
+		.where( "created" )
+		.between( 0, Math.floor( Date.now() / 1000 ) - 60 * 15 )
+		.toArray()
+		.then( function( pokemons ) {
+			// TODO: Delete from map and DB
+			console.log( pokemons );
+		} );
 }
