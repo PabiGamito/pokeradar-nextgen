@@ -65,7 +65,7 @@ function timeLeft( pokemonCreatedTs ) {
 	if ( seconds < 10 ) {
 		seconds = "0" + seconds;
 	}
-	timeLeft = minutes + ":" + seconds;
+	timeLeft = minutes + ":" + ( "0" + seconds ).slice( -2 );
 	return timeLeft;
 }
 
@@ -99,8 +99,8 @@ function addPokemonToMap( pokemonData ) {
 			pokemonDB.loadedPokemons.put( {
 				"id": pokemonData.id,
 				"pokemonId": pokemonData.pokemonId,
-				"created": pokemonData.created,
-				"marker": marker
+				"created": pokemonData.created
+					// "marker": marker
 			} );
 
 		}
@@ -133,22 +133,29 @@ function lng() {
 refreshPokemons();
 
 // UPDATES
-window.setInterval( function() {
-	updateTimeLeft();
-}, 1000 );
-
 map.on( 'moveend', function() {
 	refreshPokemons();
 } );
 
+window.setInterval( function() {
+	updateTimeLeft();
+}, 1000 );
+
 function updateTimeLeft() {
-	pokemonDB.loadedPokemons
-		.where( "created" )
-		.between( Math.floor( Date.now() / 1000 ) - 60 * 15, Math.floor( Date.now() / 1000 ) )
-		.toArray()
-		.then( function( pokemons ) {
-			console.log( "Timeleft Pokemons", pokemons );
-		} );
+	$( ".pokemonLabel" ).each( function() {
+		var timeLeft = $( this ).text();
+		var minutes = timeLeft.split( ":" )[ 0 ];
+		var seconds = timeLeft.split( ":" )[ 1 ];
+		if ( seconds > 0 ) {
+			seconds -= 1;
+		} else if ( minutes > 0 ) {
+			minutes -= 1;
+			seconds = 59;
+		} else {
+			return $( this ).text( "gone" );
+		}
+		$( this ).text( minutes + ":" + ( "0" + seconds ).slice( -2 ) );
+	} );
 }
 
 function deleteExpiredPokemons() {
