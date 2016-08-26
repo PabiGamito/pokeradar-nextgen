@@ -138,6 +138,10 @@ map.on( 'moveend', function() {
 } );
 
 window.setInterval( function() {
+	refreshPokemons();
+}, 10000 );
+
+window.setInterval( function() {
 	updateTimeLeft();
 }, 1000 );
 
