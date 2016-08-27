@@ -87,12 +87,12 @@ function addPokemonToMap( pokemonData ) {
 
 			var marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
 				icon: L.icon( {
-					iconUrl: 'img/icons/' + pokemonData.pokemonId + '.png',
+					iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
 					iconSize: [ 64, 64 ]
 				} )
 			} ).bindLabel( '<i class="fa fa-check-circle" aria-hidden="true"></i> <span>' + timeLeft( pokemonData.created ) + '</span>', {
 				noHide: true,
-				offset: [ -20, 30 ],
+				offset: [ -20, 20 ],
 				className: "pokemonLabel"
 			} ).addTo( map );
 			marker.bindPopup( "Loading" );
