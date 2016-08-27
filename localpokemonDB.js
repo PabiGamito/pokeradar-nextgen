@@ -18,6 +18,7 @@ pokemonDB.open().catch( function( e ) {
 // ******************* //
 // INITIALIZE SETTINGS //
 // ******************* //
+
 try {
 	pokemonDB.settings.bulkPut( [ {
 		"option": "showFake",
@@ -29,8 +30,7 @@ try {
 } catch ( e ) {
 
 } finally {
-	// if there was an error adding pokemon data to database try to update pokemon data if needed
-	// Check first pokemon and if all data matches assume no changes need to be made to rest either
+
 }
 
 // ********************* //

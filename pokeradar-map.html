@@ -4,48 +4,76 @@
     <meta charset="utf-8">
     <title>Poke Radar Map</title>
 
-    <!-- Include Mapbox GL -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v0.22.1/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v0.22.1/mapbox-gl.css' rel='stylesheet' />
-
-    <!-- Include Mapbox -->
-    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
-
     <!-- Include fontawesome -->
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css' rel='stylesheet' />
+
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+
+    <!-- http://materializecss.com/ -->
+    <!-- Include Materialized -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
 
     <!-- Include main.css -->
     <link href="main.css" rel="stylesheet" />
 
   </head>
   <body id="app-container">
-    <!-- Navbar -->
-    <nav id="navbar">
+
+    <div class="fixed-action-btn vertical">
+      <a class="btn-floating btn-large white">
+        <i class="fa fa-bars" aria-hidden="true" style="color: black;"></i>
+      </a>
       <ul>
-        <li><i class="fa fa-bars" aria-hidden="true"></i></li>
+        <li><a class="btn-floating red"><i class="fa fa-list-ul" aria-hidden="true"></i></a></li>
+        <li><a class="btn-floating yellow darken-1"><i class="fa fa-cog" aria-hidden="true"></i></a></li>
       </ul>
-    </nav>
+    </div>
 
     <!-- Sidemenu -->
     <aside id="side-menu">
-
+      <ul>
+        <li>Pokemon</li>
+      </ul>
     </aside>
 
     <!-- Map -->
     <div id='map'></div>
 
+    <a class="btn-floating white" id="locateMe">
+      <i class="fa fa-location-arrow" aria-hidden="true" style="color: black;"></i>
+    </a>
+
+    <!-- Include Mapbox GL -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.22.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.22.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- Include Mapbox -->
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
     <!-- Include MarkerCluster -->
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
     <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+    <!-- Include Leaflet Material -->
+    <!-- <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.indigo-pink.min.css" />
+    <script src="https://storage.googleapis.com/code.getmdl.io/1.0.2/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <script src="libs/leaflet-material.min.js"></script>
+    <link href='libs/leaflet-material.min.css' rel='stylesheet' /> -->
     <!-- Include Leaflet Label -->
     <link href='libs/leaflet.label.css' rel='stylesheet' />
     <script type="text/javascript" src="libs/leaflet.label.js"></script>
-    <!-- Include jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <!-- Include Leaflet Leaflet.Locate -->
+    <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />
+    <script src="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     <!-- Include Dexie -->
     <script src="https://npmcdn.com/dexie@latest/dist/dexie.js"></script>
+
+    <!-- Include App.js -->
+    <script type="text/javascript" src="app.js"></script>
 
     <script type="text/javascript" src="localpokemonDB.js"></script>
     <script type="text/javascript" src="pokeradar.js"></script>

@@ -4,10 +4,12 @@
 
 L.mapbox.accessToken = 'pk.eyJ1IjoicGFiaSIsImEiOiJjaXNhZGRzZWIwMDF4Mm5wdnk5YjVtcjM2In0.UzT4hfiPhDpV8EjbPhG5BQ';
 var map = L.mapbox.map( 'map', 'mapbox.outdoors' )
-	.setView( [ 40.7829, -73.9654 ], 11 );
+	.setView( [ 0, 0 ], 3 );
 
 // Minzoom to prevent to big surface to scan error
 map.options.minZoom = 3;
+
+// END LOAD MAP
 
 var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
 var markers = new L.MarkerClusterGroup();
@@ -40,12 +42,12 @@ function pokemonIsLegit( pokemonData ) {
 	if ( pokemonData.userId === "13661365" ) {
 		// 13661365 = (Poke Radar Prediction)
 		return true;
-	} else if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 5 ) {
+	} else if ( vote_ratio > 0.75 && pokemonData.upvotes > 5 ) {
 		return true;
-	} else if ( !rarePokemon ) {
-		return true;
-	} else {
+	} else if ( vote_ratio < 0.5 ) {
 		return false;
+	} else {
+		return "n/a";
 	}
 }
 
@@ -83,10 +85,12 @@ function loadPopupContent( marker, pokemonData ) {
 function addPokemonToMap( pokemonData ) {
 	// pokemonData = {latitude: 40, longitude: -70, pokemonId: 48}
 	var confirmedCircle;
-	if ( pokemonIsLegit( pokemonData ) ) {
+	if ( pokemonIsLegit( pokemonData ) === "n/a" ) {
+		confirmedCircle = '';
+	} else if ( pokemonIsLegit( pokemonData ) ) {
 		confirmedCircle = '<i class="fa fa-check-circle" aria-hidden="true"></i> ';
 	} else {
-		confirmedCircle = '';
+		confirmedCircle = '<i class="fa fa-times-circle" aria-hidden="true"></i> ';
 	}
 	pokemonDB.loadedPokemons.get( pokemonData.id ).then( function( pokemon ) {
 		var marker;
@@ -154,21 +158,57 @@ function lng() {
 }
 
 // LOAD POKEMONS ON MAP
-refreshPokemons();
+function locate() {
+	map.locate( {
+			setView: true,
+			watch: true,
+			maxZoom: 16
+		} ) /* This will return map so you can do chaining */
+		.on( 'locationfound', function( e ) {
+			var locationIcon = L.icon( {
+				iconUrl: 'img/icons/locationIcon.png',
+				iconSize: [ 32, 32 ], // size of the icon
+			} );
+			map.setView( [ e.latitude, e.longitude ], 16 );
+			// var marker = L.marker( [ e.latitude, e.longitude ], {
+			// 	"icon": locationIcon
+			// } );
+			var circle = L.circle( [ e.latitude, e.longitude ], e.accuracy / 2, {
+				weight: 1,
+				color: 'blue',
+				fillColor: '#cacaca',
+				fillOpacity: 0.2
+			} );
+			map.addLayer( circle );
 
-// UPDATES
-map.on( 'moveend', function() {
-	refreshPokemons();
-} );
+			refreshPokemons();
+			StartAutoUpdates();
+		} )
+		.on( 'locationerror', function( e ) {
+			console.log( e );
+			alert( "Location access denied." );
 
-window.setInterval( function() {
-	refreshPokemons();
-}, 10000 );
+			refreshPokemons();
+			StartAutoUpdates();
+		} );
+}
+locate();
 
-window.setInterval( function() {
-	updateTimeLeft();
-	deleteExpiredPokemons();
-}, 1000 );
+function StartAutoUpdates() {
+	// UPDATES
+	map.on( 'moveend', function() {
+		refreshPokemons();
+	} );
+
+	window.setInterval( function() {
+		refreshPokemons();
+	}, 10000 );
+
+	window.setInterval( function() {
+		updateTimeLeft();
+		deleteExpiredPokemons();
+	}, 1000 );
+}
 
 function updateTimeLeft() {
 	$( ".pokemonLabel span" ).each( function() {
