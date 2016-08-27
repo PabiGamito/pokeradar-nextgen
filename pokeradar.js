@@ -11,6 +11,8 @@ map.options.minZoom = 3;
 
 var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
 var total_pokemons = 0;
+var markers = new L.MarkerClusterGroup();
+var markersList = [];
 
 function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLongitude ) {
 	total_pokemons = 0;
@@ -90,13 +92,19 @@ function addPokemonToMap( pokemonData ) {
 					iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
 					iconSize: [ 64, 64 ]
 				} )
-			} ).bindLabel( '<i class="fa fa-check-circle" aria-hidden="true"></i> <span>' + timeLeft( pokemonData.created ) + '</span>', {
+			} ).bindLabel( '<i class="fa fa-check-circle" aria-hidden="true"></i> <span created="' + pokemonData.created + '">' + timeLeft( pokemonData.created ) + '</span>', {
 				noHide: true,
 				offset: [ -20, 20 ],
 				className: "pokemonLabel"
 			} ).addTo( map );
 			marker.bindPopup( "Loading" );
 			loadPopupContent( marker, pokemonData.pokemonId, pokemonData.upvotes, pokemonData.downvotes );
+
+			markersList.push( {
+				"marker": marker,
+				"created": pokemonData.created
+			} );
+			markers.addLayer( marker );
 
 			pokemonDB.loadedPokemons.put( {
 				"id": pokemonData.id,
@@ -150,18 +158,8 @@ window.setInterval( function() {
 
 function updateTimeLeft() {
 	$( ".pokemonLabel span" ).each( function() {
-		var timeLeft = $( this ).text();
-		var minutes = timeLeft.split( ":" )[ 0 ];
-		var seconds = timeLeft.split( ":" )[ 1 ];
-		if ( seconds > 0 ) {
-			seconds -= 1;
-		} else if ( minutes > 0 ) {
-			minutes -= 1;
-			seconds = 59;
-		} else {
-			return $( this ).text( "gone" );
-		}
-		$( this ).text( minutes + ":" + ( "0" + seconds ).slice( -2 ) );
+		var created = parseInt( $( this ).attr( "created" ) );
+		$( this ).text( timeLeft( created ) );
 	} );
 }
 
@@ -169,9 +167,13 @@ function deleteExpiredPokemons() {
 	pokemonDB.loadedPokemons
 		.where( "created" )
 		.between( 0, Math.floor( Date.now() / 1000 ) - 60 * 15 )
-		.toArray()
-		.then( function( pokemons ) {
-			// TODO: Delete from map and DB
-			console.log( pokemons );
-		} );
+		.delete();
+
+	for ( i = 0; i < markersList.length; i++ ) {
+		if ( markersList[ i ].created <= Math.floor( Date.now() / 1000 ) - 60 * 15 ) {
+			map.removeLayer( markersList[ i ].marker );
+		}
+	}
+}
+}
 }
