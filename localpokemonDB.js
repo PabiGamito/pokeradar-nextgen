@@ -2,8 +2,9 @@
 var pokemonDB = new Dexie( "pokemonDB" );
 
 pokemonDB.version( 1 ).stores( {
-	loadedPokemons: 'id, pokemonId, created, marker',
-	pokemons: 'id, name'
+	loadedPokemons: 'id, pokemonId, created',
+	pokemons: 'id, name',
+	settings: 'option, value'
 } );
 
 // Clear Previously Loaded Pokemons
@@ -13,6 +14,24 @@ pokemonDB.loadedPokemons.clear();
 pokemonDB.open().catch( function( e ) {
 	alert( "Open DB failed: " + e );
 } );
+
+// ******************* //
+// INITIALIZE SETTINGS //
+// ******************* //
+try {
+	pokemonDB.settings.bulkPut( [ {
+		"option": "showFake",
+		"value": false
+	}, {
+		"option": "showNonConfirmed",
+		"value": true
+	} ] );
+} catch ( e ) {
+
+} finally {
+	// if there was an error adding pokemon data to database try to update pokemon data if needed
+	// Check first pokemon and if all data matches assume no changes need to be made to rest either
+}
 
 // ********************* //
 // INITIALIZE POKEMON DB //

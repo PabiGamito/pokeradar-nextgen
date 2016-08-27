@@ -15,32 +15,25 @@
     <!-- Include fontawesome -->
     <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css' rel='stylesheet' />
 
+    <!-- Include main.css -->
+    <link href="main.css" rel="stylesheet" />
+
   </head>
-  <body>
-    <style media="screen">
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      nav {
-        position: fixed;
-        top: 0;
-      }
-      #map {
-        z-index: 0;
-      }
-      .pokemonLabel{
-
-      }
-    </style>
-
-    <!-- <nav>
+  <body id="app-container">
+    <!-- Navbar -->
+    <nav id="navbar">
       <ul>
-        <li>|||</li>
+        <li><i class="fa fa-bars" aria-hidden="true"></i></li>
       </ul>
-    </nav> -->
+    </nav>
 
-    <div id='map' style='width: 100vw; height: 100vh;'></div>
+    <!-- Sidemenu -->
+    <aside id="side-menu">
+
+    </aside>
+
+    <!-- Map -->
+    <div id='map'></div>
 
     <!-- Include MarkerCluster -->
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>

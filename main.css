@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+#app-container {
+  width: 100vw;
+  height: 100vh;
+}
+#navbar {
+  position: relative;
+  top: 0;
+}
+#navbar ul {
+  list-style-type: none;
+}
+#side-menu {
+
+}
+
+/* MAP */
+#map {
+  height: 100%;
+  width: 100%;
+}
+.pokemonLabel:before {
+  display: none;
+}
+.leaflet-popup-content .fa-thumbs-down {
+  font-size: 20px;
+  margin: 10px 0 0 10px;
+}
+.leaflet-popup-content .fa-thumbs-up {
+  float: right;
+  font-size: 20px;
+  margin: 10px 10px 0 0;
+}

@@ -10,7 +10,6 @@ var map = L.mapbox.map( 'map', 'mapbox.outdoors' )
 map.options.minZoom = 3;
 
 var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
-var total_pokemons = 0;
 var markers = new L.MarkerClusterGroup();
 var markersList = [];
 
@@ -27,10 +26,7 @@ function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLong
 			if ( data.success ) {
 				data = data.data;
 				for ( var i = 0; i < data.length; i++ ) {
-					var pokemonId = data[ i ].pokemonId;
-					if ( pokemonIsLegit( data[ i ] ) ) {
-						addPokemonToMap( data[ i ] );
-					}
+					addPokemonToMap( data[ i ] );
 				}
 			}
 		}
@@ -44,7 +40,7 @@ function pokemonIsLegit( pokemonData ) {
 	if ( pokemonData.userId === "13661365" ) {
 		// 13661365 = (Poke Radar Prediction)
 		return true;
-	} else if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 2 ) {
+	} else if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 5 ) {
 		return true;
 	} else if ( !rarePokemon ) {
 		return true;
@@ -78,25 +74,38 @@ function loadPopupContent( marker, pokemonData ) {
 	pokemonDB.pokemons.get( pokemonData.pokemonId ).then( function( pokemon ) {
 		vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
 		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" +
-			"<p>" + pokemonData.upvotes + "/" + ( pokemonData.downvotes + pokemonData.upvotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" + "</p>" +
-			"<p>" + pokemonData.latitude + " ; " + pokemonData.longitude + "</p>" +
-			'<i class="fa fa-thumbs-down" aria-hidden="true" style="font-size: 20px; margin: 10px 0 0 10px;"></i>' + '<i class="fa fa-thumbs-up" aria-hidden="true" style="float: right; font-size: 20px; margin: 10px 10px 0 0;"></i>' );
+			"<p>" + pokemonData.upvotes + "/" + ( pokemonData.downvotes + pokemonData.upvotes ) + " - " + Math.round( vote_ratio * 100 * 100 ) / 100 + "%" + "</p>" +
+			"<p>" + pokemonData.latitude.toFixed( 5 ) + " " + pokemonData.longitude.toFixed( 5 ) + "</p>" + // coordinates decimal place accuracy http://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+			'<i class="fa fa-thumbs-down" aria-hidden="true"></i>' + '<i class="fa fa-thumbs-up" aria-hidden="true"></i>' );
 	} );
 }
 
 function addPokemonToMap( pokemonData ) {
 	// pokemonData = {latitude: 40, longitude: -70, pokemonId: 48}
+	var confirmedCircle;
+	if ( pokemonIsLegit( pokemonData ) ) {
+		confirmedCircle = '<i class="fa fa-check-circle" aria-hidden="true"></i> ';
+	} else {
+		confirmedCircle = '';
+	}
 	pokemonDB.loadedPokemons.get( pokemonData.id ).then( function( pokemon ) {
-		if ( !pokemon ) {
-			total_pokemons += 1;
-			document.title = total_pokemons + " - Pokemon Radar Map";
-
-			var marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
+		var marker;
+		if ( pokemon ) {
+			// if Pokemon already loaded + saved in loadedPokemons table
+			for ( i = 0; i < markersList.length; i++ ) {
+				if ( markersList[ i ].id === pokemonData.id ) {
+					marker = markersList[ i ].marker;
+					loadPopupContent( marker, pokemonData );
+				}
+			}
+		} else {
+			// if Pokemon not already loaded + not saved in loadedPokemons table
+			marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
 				icon: L.icon( {
 					iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
 					iconSize: [ 64, 64 ]
 				} )
-			} ).bindLabel( '<i class="fa fa-check-circle" aria-hidden="true"></i> <span created="' + pokemonData.created + '">' + timeLeft( pokemonData.created ) + '</span>', {
+			} ).bindLabel( confirmedCircle + '<span created="' + pokemonData.created + '">' + timeLeft( pokemonData.created ) + '</span>', {
 				noHide: true,
 				offset: [ -20, 20 ],
 				className: "pokemonLabel"
@@ -105,6 +114,7 @@ function addPokemonToMap( pokemonData ) {
 			loadPopupContent( marker, pokemonData );
 
 			markersList.push( {
+				"id": pokemonData.id,
 				"marker": marker,
 				"created": pokemonData.created
 			} );
@@ -176,6 +186,7 @@ function deleteExpiredPokemons() {
 	for ( i = 0; i < markersList.length; i++ ) {
 		if ( markersList[ i ].created <= Math.floor( Date.now() / 1000 ) - 60 * 15 ) {
 			map.removeLayer( markersList[ i ].marker );
+			markersList.splice( i, 1 );
 		}
 	}
 }
