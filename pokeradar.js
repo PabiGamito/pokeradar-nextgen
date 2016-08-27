@@ -38,10 +38,13 @@ function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLong
 }
 
 function pokemonIsLegit( pokemonData ) {
-	var rarePokemon = true; //rarePokemon( pokemonData.pokemonId );
+	var rarePokemon = true; //TODO: rarePokemon( pokemonData.pokemonId );
 	vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
 
-	if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 2 ) {
+	if ( pokemonData.userId === "13661365" ) {
+		// 13661365 = (Poke Radar Prediction)
+		return true;
+	} else if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 2 ) {
 		return true;
 	} else if ( !rarePokemon ) {
 		return true;
@@ -71,12 +74,13 @@ function timeLeft( pokemonCreatedTs ) {
 	return timeLeft;
 }
 
-function loadPopupContent( marker, pokemonId, upVotes, downVotes ) {
-	pokemonDB.pokemons.get( pokemonId ).then( function( pokemon ) {
-		vote_ratio = upVotes / ( downVotes + upVotes );
+function loadPopupContent( marker, pokemonData ) {
+	pokemonDB.pokemons.get( pokemonData.pokemonId ).then( function( pokemon ) {
+		vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
 		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" +
-			"<p>" + upVotes + "/" + ( downVotes + upVotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" + "</p>" +
-			'<i class="fa fa-thumbs-up" aria-hidden="true"></i>' + '<i class="fa fa-thumbs-down" aria-hidden="true"></i>' );
+			"<p>" + pokemonData.upvotes + "/" + ( pokemonData.downvotes + pokemonData.upvotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" + "</p>" +
+			"<p>" + pokemonData.latitude + " ; " + pokemonData.longitude + "</p>" +
+			'<i class="fa fa-thumbs-down" aria-hidden="true" style="font-size: 20px; margin: 10px 0 0 10px;"></i>' + '<i class="fa fa-thumbs-up" aria-hidden="true" style="float: right; font-size: 20px; margin: 10px 10px 0 0;"></i>' );
 	} );
 }
 
@@ -98,7 +102,7 @@ function addPokemonToMap( pokemonData ) {
 				className: "pokemonLabel"
 			} ).addTo( map );
 			marker.bindPopup( "Loading" );
-			loadPopupContent( marker, pokemonData.pokemonId, pokemonData.upvotes, pokemonData.downvotes );
+			loadPopupContent( marker, pokemonData );
 
 			markersList.push( {
 				"marker": marker,
