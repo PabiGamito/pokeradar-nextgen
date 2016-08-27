@@ -3,7 +3,7 @@
 // ******** //
 
 L.mapbox.accessToken = 'pk.eyJ1IjoicGFiaSIsImEiOiJjaXNhZGRzZWIwMDF4Mm5wdnk5YjVtcjM2In0.UzT4hfiPhDpV8EjbPhG5BQ';
-var map = L.mapbox.map( 'map', 'mapbox.streets' )
+var map = L.mapbox.map( 'map', 'mapbox.outdoors' )
 	.setView( [ 40.7829, -73.9654 ], 11 );
 
 // Minzoom to prevent to big surface to scan error
@@ -39,7 +39,7 @@ function pokemonIsLegit( pokemonData ) {
 	var rarePokemon = true; //rarePokemon( pokemonData.pokemonId );
 	vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
 
-	if ( rarePokemon && vote_ratio > 0.70 && pokemonData.upvotes > 1 ) {
+	if ( rarePokemon && vote_ratio > 0.75 && pokemonData.upvotes > 2 ) {
 		return true;
 	} else if ( !rarePokemon ) {
 		return true;
@@ -72,7 +72,9 @@ function timeLeft( pokemonCreatedTs ) {
 function loadPopupContent( marker, pokemonId, upVotes, downVotes ) {
 	pokemonDB.pokemons.get( pokemonId ).then( function( pokemon ) {
 		vote_ratio = upVotes / ( downVotes + upVotes );
-		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" + upVotes + "/" + ( downVotes + upVotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" );
+		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" +
+			"<p>" + upVotes + "/" + ( downVotes + upVotes ) + " - " + ( vote_ratio * 100 ).toFixed( 2 ) + "%" + "</p>" +
+			'<i class="fa fa-thumbs-up" aria-hidden="true"></i>' + '<i class="fa fa-thumbs-down" aria-hidden="true"></i>' );
 	} );
 }
 
@@ -88,7 +90,7 @@ function addPokemonToMap( pokemonData ) {
 					iconUrl: 'img/icons/' + pokemonData.pokemonId + '.png',
 					iconSize: [ 64, 64 ]
 				} )
-			} ).bindLabel( timeLeft( pokemonData.created ), {
+			} ).bindLabel( '<i class="fa fa-check-circle" aria-hidden="true"></i> <span>' + timeLeft( pokemonData.created ) + '</span>', {
 				noHide: true,
 				offset: [ -20, 30 ],
 				className: "pokemonLabel"
@@ -143,10 +145,11 @@ window.setInterval( function() {
 
 window.setInterval( function() {
 	updateTimeLeft();
+	deleteExpiredPokemons();
 }, 1000 );
 
 function updateTimeLeft() {
-	$( ".pokemonLabel" ).each( function() {
+	$( ".pokemonLabel span" ).each( function() {
 		var timeLeft = $( this ).text();
 		var minutes = timeLeft.split( ":" )[ 0 ];
 		var seconds = timeLeft.split( ":" )[ 1 ];
