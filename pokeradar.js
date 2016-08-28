@@ -145,22 +145,6 @@ function lng() {
 }
 
 // LOAD POKEMONS ON MAP
-map.locate( {
-		setView: true,
-		watch: true,
-		maxZoom: 17
-	} )
-	.on( 'locationfound', function( e ) {
-		map.setView( [ e.latitude, e.longitude ], 16 );
-		refreshPokemons();
-		StartAutoUpdates();
-	} )
-	.on( 'locationerror', function( e ) {
-		console.log( e );
-		refreshPokemons();
-		StartAutoUpdates();
-	} );
-
 function StartAutoUpdates() {
 	// UPDATES
 	map.on( 'moveend', function() {
@@ -190,6 +174,7 @@ function deleteExpiredPokemons() {
 		.between( 0, Math.floor( Date.now() / 1000 ) - 60 * 15 )
 		.delete();
 
+	// TODO: Iterate only through pokemon markers that are not bundled in a cluster to prevent lag
 	for ( i = 0; i < markersList.length; i++ ) {
 		if ( markersList[ i ].created <= Math.floor( Date.now() / 1000 ) - 60 * 15 ) {
 			map.removeLayer( markersList[ i ].marker );

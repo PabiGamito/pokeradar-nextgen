@@ -50,33 +50,7 @@ var locateControl = L.Control.extend( {
 		var container = L.DomUtil.create( 'div', 'btn-floating white locateControl' );
 
 		container.onclick = function() {
-			map.locate( {
-					setView: true,
-					watch: true,
-					maxZoom: 17
-				} ) /* This will return map so you can do chaining */
-				.on( 'locationfound', function( e ) {
-					var locationIcon = L.icon( {
-						iconUrl: 'img/icons/locationIcon.png',
-						iconSize: [ 32, 32 ], // size of the icon
-					} );
-					map.setView( [ e.latitude, e.longitude ], 16 );
-					// var marker = L.marker( [ e.latitude, e.longitude ], {
-					// 	"icon": locationIcon
-					// } );
-					var circle = L.circle( [ e.latitude, e.longitude ], e.accuracy / 2, {
-						weight: 1,
-						color: 'blue',
-						fillColor: '#cacaca',
-						fillOpacity: 0.2
-					} );
-					map.addLayer( circle );
-					refreshPokemons();
-				} )
-				.on( 'locationerror', function( e ) {
-					console.log( e );
-					refreshPokemons();
-				} );
+			map.setView( locationMarker.getLatLng(), 17 );
 		};
 		return container;
 	}
@@ -87,6 +61,8 @@ map.addControl( new zoomInControl() );
 map.addControl( new zoomOutControl() );
 map.addControl( new locateControl() );
 
+// END LOAD MAP
+
 // Create Marker Clusters
 var markerClusters = new L.MarkerClusterGroup( {
 	showCoverageOnHover: true,
@@ -95,4 +71,42 @@ var markerClusters = new L.MarkerClusterGroup( {
 } );
 map.addLayer( markerClusters );
 
-// END LOAD MAP
+// LOCATION AND LOAD POKEMONS
+var locationMarker;
+
+map.locate( {
+		setView: true,
+		watch: true,
+		maxZoom: 17
+	} )
+	.on( 'locationfound', function( e ) {
+		try {
+			map.removeLayer( locationMarker );
+		} catch ( err ) {
+			console.log( err );
+		}
+		var locationIcon = L.icon( {
+			iconUrl: 'img/icons/locationIcon.png',
+			iconSize: [ 16, 16 ], // size of the icon
+		} );
+		map.setView( [ e.latitude, e.longitude ], 17 );
+		locationMarker = L.marker( [ e.latitude, e.longitude ], {
+			"icon": locationIcon
+		} );
+		var circle = L.circle( [ e.latitude, e.longitude ], e.accuracy, {
+			weight: 1,
+			color: 'blue',
+			fillColor: '#cacaca',
+			fillOpacity: 0.2
+		} );
+		map.addLayer( locationMarker );
+		map.addLayer( circle );
+
+		refreshPokemons();
+		StartAutoUpdates();
+	} )
+	.on( 'locationerror', function( e ) {
+		console.log( e );
+		refreshPokemons();
+		StartAutoUpdates();
+	} );
