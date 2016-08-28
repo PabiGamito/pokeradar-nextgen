@@ -1,5 +1,6 @@
 var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
 var markersList = [];
+var newPokemonData;
 
 function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLongitude ) {
 	total_pokemons = 0;
@@ -11,10 +12,23 @@ function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLong
 		maxLongitude: maxLongitude
 	}, function( data, status ) {
 		if ( status == "success" ) {
-			if ( data.success ) {
+			if ( data.success && data.data.length > 0 ) {
 				data = data.data;
-				for ( var i = 0; i < data.length; i++ ) {
-					addPokemonToMap( data[ i ] );
+				addPokemonToMap( data[ 0 ] );
+				for ( var i = 1; i < data.length; i++ ) {
+					var pokemonData = data[ i - 1 ];
+					newPokemonData = data[ i ];
+					pokemonDB.loadedPokemons.put( {
+						"id": pokemonData.id,
+						"pokemonId": pokemonData.pokemonId,
+						"created": pokemonData.created,
+						"lat": pokemonData.latitude,
+						"lng": pokemonData.longitude
+							// "marker": marker
+					} ).then( function() {
+						// To make sure pokemons are not placed twice on map
+						addPokemonToMap( newPokemonData );
+					} );
 				}
 			}
 		}
@@ -77,12 +91,12 @@ function addPokemonToMap( pokemonData ) {
 		confirmedCircle = '<i class="fa fa-times-circle" aria-hidden="true"></i> ';
 	}
 	pokemonDB.loadedPokemons
-		.where( '[lat+lng]' )
-		.equals( [ pokemonData.latitude, pokemonData.longitude ] )
+		.where( '[pokemonId+lat+lng]' )
+		.equals( [ pokemonData.pokemonId, pokemonData.latitude, pokemonData.longitude ] )
 		.first()
 		.then( function( pokemon ) {
 			var marker;
-			if ( pokemon ) {
+			if ( pokemon && pokemonData.userId !== "13661365" ) {
 				// if Pokemon already loaded + saved in loadedPokemons table
 				for ( i = 0; i < markersList.length; i++ ) {
 					if ( markersList[ i ].id === pokemonData.id ) {
@@ -91,6 +105,9 @@ function addPokemonToMap( pokemonData ) {
 					}
 				}
 			} else {
+				if ( pokemon && pokemonData.userId === "13661365" ) {
+					pokemon.delete();
+				}
 				// if Pokemon not already loaded + not saved in loadedPokemons table
 				marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
 					icon: L.icon( {
@@ -109,15 +126,6 @@ function addPokemonToMap( pokemonData ) {
 					"id": pokemonData.id,
 					"marker": marker,
 					"created": pokemonData.created
-				} );
-
-				pokemonDB.loadedPokemons.put( {
-					"id": pokemonData.id,
-					"pokemonId": pokemonData.pokemonId,
-					"created": pokemonData.created,
-					"lat": pokemonData.latitude,
-					"lng": pokemonData.longitude
-						// "marker": marker
 				} );
 
 				markerClusters.addLayer( marker );
