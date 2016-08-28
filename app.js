@@ -71,10 +71,12 @@ $( ".deselect-all-pokemons" ).click( function() {
 	} );
 } );
 
+// TODO: FIND OUT WHY THIS ISN'T WORKING
 $( ".settings-container .pokemons .pokemon:not(.selected)" ).click( function() {
 	pokemonsToShow.push( parseInt( $( this ).attr( "pokemonId" ) ) );
 } );
-$( ".settings-container .pokemons .pokemon.selected" ).click( function() {
+$( ".settings-container" ).find( ".pokemons .pokemon.selected" ).click( function() {
+	alert( "Clicked" );
 	var pokemonId = parseInt( $( this ).attr( "pokemonId" ) );
 	pokemonDB.loadedPokemons.where( "pokemonId" ).equals( pokemonId ).delete().then( function() {
 		for ( i = 0; i < markersList.length; i++ ) {
@@ -95,6 +97,17 @@ var $settingPokemonList = $( ".settings-container .pokemons" );
 Object.keys( pokemonNames ).forEach( function( key ) {
 	$settingPokemonList.append( '<div class="pokemon" pokemonId="' + key + '"><img src="http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + key ).slice( -3 ) + '.png" /><span>' + pokemonNames[ key ] + '</span></div>' );
 } );
+// Add selected class to those selected
+if ( pokemonsToShow[ 0 ] === "" ) {
+	$( ".settings-container .pokemons .pokemon" ).addClass( "selected" );
+} else {
+	for ( i = 0; i < pokemonsToShow.length; i++ ) {
+		var pokemonId = pokemonsToShow[ i ];
+		$( ".settings-container .pokemons .pokemon[pokemonId='" + pokemonId + "']" ).addClass( "selected" );
+	}
+}
+
+// TODO: Save selected pokemons to the DB
 
 // List Pokemons in Side Menu
 function showPokemonsInSideMenu() {

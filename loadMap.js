@@ -112,6 +112,9 @@ map.locate( {
 	} )
 	.on( 'locationerror', function( e ) {
 		console.log( e );
+		var santaMonica = [ 34.0091, -118.4970 ];
+		map.setView( santaMonica, 16 );
+		// TODO: findout with this isn't working
 		$( ".locateControl" ).addClass( "disabled" );
 		refreshPokemons();
 		StartAutoUpdates();

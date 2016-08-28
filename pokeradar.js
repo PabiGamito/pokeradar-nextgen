@@ -138,7 +138,7 @@ function addPokemonToMap( pokemonData ) {
 		.get( pokemonData.id )
 		.then( function( pokemon ) {
 			if ( !pokemon ) {
-				console.log( "Pokemon not found in DB", pokemonData.id )
+				// console.log( "Pokemon not found in DB", pokemonData.id )
 			}
 			var marker;
 			// console.log( "Pokemon", pokemon, "equal", [ pokemonData.userId, pokemonData.pokemonId, pokemonData.latitude, pokemonData.longitude ] );
@@ -202,7 +202,7 @@ function addPokemonToMap( pokemonData ) {
 				} );
 
 				if ( !alreadySpawn ) {
-					console.log( "Adding marker", pokemonData );
+					// console.log( "Adding marker", pokemonData );
 					markerClusters.addLayer( marker );
 				}
 
