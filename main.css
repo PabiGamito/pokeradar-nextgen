@@ -1,6 +1,7 @@
 body {
   margin: 0;
   padding: 0;
+  color: black;
 }
 #app-container {
   width: 100vw;
@@ -11,10 +12,11 @@ body {
   position: fixed;
   top: 0;
   left: -300px;
-  z-index: 9999;
+  /*z-index: 9999;*/
   width: 300px;
   height: 100vh;
   background: white;
+  overflow-y: auto;
 }
 
 .fixed-action-btn {
