@@ -28,13 +28,14 @@
         <i class="fa fa-bars" aria-hidden="true" style="color: black;"></i>
       </a>
       <ul>
-        <li><a class="btn-floating red"><i class="fa fa-list-ul" aria-hidden="true"></i></a></li>
-        <li><a class="btn-floating yellow darken-1"><i class="fa fa-cog" aria-hidden="true"></i></a></li>
+        <li><a class="btn-floating white open-side-menu"><i class="fa fa-list-ul" aria-hidden="true"></i></a></li>
+        <li><a class="btn-floating white open-side-menu"><i class="fa fa-cog" aria-hidden="true"></i></a></li>
       </ul>
     </div>
 
     <!-- Sidemenu -->
     <aside id="side-menu">
+      <i class="fa fa-times close-side-menu" aria-hidden="true" style="float: right;"></i>
       <ul>
         <li>Pokemon</li>
       </ul>
@@ -42,10 +43,6 @@
 
     <!-- Map -->
     <div id='map'></div>
-
-    <a class="btn-floating white" id="locateMe">
-      <i class="fa fa-location-arrow" aria-hidden="true" style="color: black;"></i>
-    </a>
 
     <!-- Include Mapbox GL -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v0.22.1/mapbox-gl.js'></script>
@@ -69,6 +66,9 @@
     <!-- Include Leaflet Leaflet.Locate -->
     <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />
     <script src="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    <!-- Include Leaflet Locate Control -->
+    <!-- <link rel="stylesheet" href="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.css" />
+    <script src="https://domoritz.github.io/leaflet-locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script> -->
     <!-- Include Dexie -->
     <script src="https://npmcdn.com/dexie@latest/dist/dexie.js"></script>
 

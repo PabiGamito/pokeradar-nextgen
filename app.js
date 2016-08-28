@@ -1,18 +1,18 @@
 // Toggle sidebar
 $( ".open-side-menu" ).click( function() {
-	if ( $( "#side-menu" ).is( ":visible" ) ) {
-		$( "#side-menu" ).hide( "slide", {
-			direction: "left"
-		}, 500 );
+	if ( $( "#app-container" ).css( "margin-left" ) === "0px" ) {
+		$( "#app-container" ).animate( {
+			marginLeft: $( "#side-menu" ).width()
+		} );
+		$( ".fixed-action-btn" ).animate( {
+			marginLeft: $( "#side-menu" ).width()
+		} );
 	} else {
-		$( "#side-menu" ).show( "slide", {
-			direction: "left"
-		}, 500 );
+		$( "#app-container" ).animate( {
+			marginLeft: 0
+		} );
+		$( ".fixed-action-btn" ).animate( {
+			marginLeft: 0
+		} );
 	}
-
-} );
-
-// LOCATE //
-$( "#locateMe" ).click( function() {
-	locate();
 } );
