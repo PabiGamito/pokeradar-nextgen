@@ -54,6 +54,48 @@ $( ".show-located-pokemons" ).click( function() {
 	showPokemonsInSideMenu();
 } );
 
+$( ".select-all-pokemons" ).click( function() {
+	$( ".settings-container .pokemons .pokemon" ).addClass( "selected" );
+	pokemonsToShow = [ "" ];
+} );
+
+$( ".deselect-all-pokemons" ).click( function() {
+	$( ".settings-container .pokemons .pokemon" ).removeClass( "selected" );
+	pokemonDB.loadedPokemons.clear().then( function() {
+		for ( i = 0; i < markersList.length; i++ ) {
+			map.removeLayer( markersList[ i ].marker );
+		}
+		markersList = [];
+		pokemonsToShow = [];
+		refreshPokemons();
+	} );
+} );
+
+$( ".settings-container .pokemons .pokemon:not(.selected)" ).click( function() {
+	pokemonsToShow.push( parseInt( $( this ).attr( "pokemonId" ) ) );
+} );
+$( ".settings-container .pokemons .pokemon.selected" ).click( function() {
+	var pokemonId = parseInt( $( this ).attr( "pokemonId" ) );
+	pokemonDB.loadedPokemons.where( "pokemonId" ).equals( pokemonId ).delete().then( function() {
+		for ( i = 0; i < markersList.length; i++ ) {
+			if ( markersList[ i ].pokemonId === pokemonId ) {
+				map.removeLayer( markersList[ i ].marker );
+			}
+		}
+		for ( var i = pokemonsToShow.length - 1; i >= 0; i-- ) {
+			if ( pokemonsToShow[ i ] === pokemonId || pokemonsToShow[ i ] === "" ) {
+				array.splice( i, 1 );
+			}
+		}
+		refreshPokemons();
+	} );
+} );
+
+var $settingPokemonList = $( ".settings-container .pokemons" );
+Object.keys( pokemonNames ).forEach( function( key ) {
+	$settingPokemonList.append( '<div class="pokemon" pokemonId="' + key + '"><img src="http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + key ).slice( -3 ) + '.png" /><span>' + pokemonNames[ key ] + '</span></div>' );
+} );
+
 // List Pokemons in Side Menu
 function showPokemonsInSideMenu() {
 	var sideMenuPokemons = [];

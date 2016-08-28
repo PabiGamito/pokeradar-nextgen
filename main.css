@@ -18,6 +18,26 @@ body {
   background: white;
   overflow-y: auto;
 }
+#side-menu .settings-container a:hover {
+  cursor: pointer;
+}
+#side-menu .settings-container .pokemons {
+  margin: auto;
+}
+#side-menu .settings-container .pokemons .pokemon {
+  width: 92px;
+  display: inline-block;
+  text-align: center;
+  opacity: 0.4;
+  cursor: pointer;
+}
+#side-menu .settings-container .pokemons .pokemon.selected {
+  opacity: 1;
+}
+#side-menu .settings-container .pokemons img {
+  width: 80px;
+  float: left;
+}
 #side-menu .located-pokemons .pokemon {
   border-bottom: 1px solid black;
   height: 50px;

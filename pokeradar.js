@@ -1,8 +1,15 @@
-var pokemonsToShow = [ 6, 9, 26, 38, 40, 55, 59, 62, 94, 103, 108, 130, 131, 143, 149 ];
+var pokemonsToShow = [ "" ];
 var markersList = [];
-var newPokemonData;
+var savePokemonData;
+var refreshPokemonsInProgress = false;
 
-function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLongitude ) {
+function parsePokemonId( id ) {
+	var idParts = id.split( "-" );
+	var parsedId = idParts[ 0 ] + "-" + idParts[ 1 ] + "-" + parseFloat( idParts[ 2 ] ).toFixed( 6 ) + "-" + parseFloat( idParts[ 3 ] ).toFixed( 6 );
+	return parsedId;
+}
+
+function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLongitude, lastSearch ) {
 	total_pokemons = 0;
 	$.get( "https://www.pokeradar.io/api/v1/submissions", {
 		pokemonId: pokemonId,
@@ -14,22 +21,57 @@ function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLong
 		if ( status == "success" ) {
 			if ( data.success && data.data.length > 0 ) {
 				data = data.data;
+				// Unify IDs
+				for ( var i = 0; i < data.length; i++ ) {
+					data[ i ].id = parsePokemonId( data[ i ].id );
+				}
+				var lastSearchDone = false;
 				addPokemonToMap( data[ 0 ] );
 				for ( var i = 1; i < data.length; i++ ) {
 					var pokemonData = data[ i - 1 ];
-					newPokemonData = data[ i ];
+					var newPokemonData = data[ i ];
+					if ( savePokemonData ) {
+						pokemonDB.loadedPokemons.put( {
+							"id": pokemonData.id,
+							"pokemonId": pokemonData.pokemonId,
+							"userId": pokemonData.userId,
+							"created": pokemonData.created,
+							"lat": pokemonData.latitude.toFixed( 6 ),
+							"lng": pokemonData.longitude.toFixed( 6 )
+								// "marker": marker
+						} ).then( function() {
+							// To make sure pokemons are not placed twice on map
+							addPokemonToMap( newPokemonData );
+						} );
+					} else {
+						addPokemonToMap( newPokemonData );
+					}
+				}
+				if ( savePokemonData ) {
+					var pokemonData = data[ data.length - 1 ];
 					pokemonDB.loadedPokemons.put( {
 						"id": pokemonData.id,
 						"pokemonId": pokemonData.pokemonId,
+						"userId": pokemonData.userId,
 						"created": pokemonData.created,
-						"lat": pokemonData.latitude,
-						"lng": pokemonData.longitude
+						"lat": pokemonData.latitude.toFixed( 6 ),
+						"lng": pokemonData.longitude.toFixed( 6 )
 							// "marker": marker
 					} ).then( function() {
-						// To make sure pokemons are not placed twice on map
-						addPokemonToMap( newPokemonData );
+						lastSearchDone = true;
+						if ( lastSearch ) {
+							refreshPokemonsInProgress = false;
+						}
 					} );
 				}
+				setTimeout( function() {
+					// Incase there is an error saving last query to DB
+					if ( lastSearch && !lastSearchDone ) {
+						refreshPokemonsInProgress = false;
+					}
+				}, 200 );
+			} else if ( lastSearch ) {
+				refreshPokemonsInProgress = false;
 			}
 		}
 	} );
@@ -91,25 +133,44 @@ function addPokemonToMap( pokemonData ) {
 		confirmedCircle = '<i class="fa fa-times-circle" aria-hidden="true"></i> ';
 	}
 	pokemonDB.loadedPokemons
-		.where( '[pokemonId+lat+lng]' )
-		.equals( [ pokemonData.pokemonId, pokemonData.latitude, pokemonData.longitude ] )
-		.first()
+		// .where( '[pokemonId+lat+lng]' )
+		// .equals( [ pokemonData.pokemonId, pokemonData.latitude.toFixed( 6 ), pokemonData.longitude.toFixed( 6 ) ] )
+		.get( pokemonData.id )
 		.then( function( pokemon ) {
+			if ( !pokemon ) {
+				console.log( "Pokemon not found in DB", pokemonData.id )
+			}
 			var marker;
-			if ( pokemon && pokemonData.userId !== "13661365" ) {
-				// if Pokemon already loaded + saved in loadedPokemons table
+			// console.log( "Pokemon", pokemon, "equal", [ pokemonData.userId, pokemonData.pokemonId, pokemonData.latitude, pokemonData.longitude ] );
+			if ( pokemon && ( pokemon.userId === "13661365" || pokemonData.userId !== "13661365" ) ) {
+				// if Pokemon already loaded + already from Pokeradar Prediction or the newer duplicate is not from pokeradar predictions
+				savePokemonData = false;
 				for ( i = 0; i < markersList.length; i++ ) {
 					if ( markersList[ i ].id === pokemonData.id ) {
 						marker = markersList[ i ].marker;
 						loadPopupContent( marker, pokemonData );
+						// TODO: Also update verified icon on icon label
 					}
 				}
 			} else {
+				savePokemonData = true;
 				if ( pokemon && pokemonData.userId === "13661365" ) {
-					pokemon.delete();
+					// if duplicate pokemon from poke radar predictions delete old one and add new one
+					savePokemonData = false;
+					pokemon.update( {
+						id: pokemonData.id,
+						userId: pokemonData.userId
+					} );
+					for ( i = 0; i < markersList.length; i++ ) {
+						if ( markersList[ i ].id === pokemonData.id ) {
+							map.removeLayer( markersList[ i ].marker );
+							markersList.splice( i, 1 );
+						}
+					}
 				}
-				// if Pokemon not already loaded + not saved in loadedPokemons table
-				marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
+				// Add pokemon to map
+				// if Pokemon not already loaded or because duplicate deleted and needs to be replaces with new one
+				marker = L.marker( [ pokemonData.latitude.toFixed( 6 ), pokemonData.longitude.toFixed( 6 ) ], {
 					icon: L.icon( {
 						iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
 						iconSize: [ 64, 64 ]
@@ -122,21 +183,43 @@ function addPokemonToMap( pokemonData ) {
 				marker.bindPopup( "Loading" );
 				loadPopupContent( marker, pokemonData );
 
+				// Should fix duplicate pokemon spawning
+				// TODO: This seems to work as a quick fix, but I need to figure out why some pokemons are not being saved to the database
+				// NOTE: There maybe to same pokemon with one having slighlty more precise coordinates which will cause both to spawn
+				var alreadySpawn = false;
+				for ( i = 0; i < markersList.length; i++ ) {
+					if ( markersList[ i ].id.match( /.+?(?=-)/ )[ 0 ] === pokemonData.id.match( /.+?(?=-)/ )[ 0 ] ) {
+						alreadySpawn = true;
+					}
+				}
+
 				markersList.push( {
 					"id": pokemonData.id,
+					// "userId": pokemonData.userId,
+					"pokemonId": pokemonData.pokemonId,
 					"marker": marker,
 					"created": pokemonData.created
 				} );
 
-				markerClusters.addLayer( marker );
+				if ( !alreadySpawn ) {
+					console.log( "Adding marker", pokemonData );
+					markerClusters.addLayer( marker );
+				}
 
 			}
 		} );
 }
 
 function refreshPokemons() {
-	for ( var i = 0; i < pokemonsToShow.length; i++ ) {
-		findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max );
+	if ( !refreshPokemonsInProgress ) {
+		refreshPokemonsInProgress = true;
+		for ( var i = 0; i < pokemonsToShow.length; i++ ) {
+			if ( i === pokemonsToShow.length - 1 ) {
+				findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, true );
+			} else {
+				findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, false );
+			}
+		}
 	}
 }
 

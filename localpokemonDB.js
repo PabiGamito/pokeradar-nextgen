@@ -2,8 +2,12 @@
 var pokemonDB = new Dexie( "pokemonDB" );
 
 pokemonDB.version( 1 ).stores( {
-	loadedPokemons: 'id, created, [pokemonId+lat+lng]',
+	loadedPokemons: 'id, created, [pokemonId+lat+lng], userId',
 	settings: 'option, value'
+} );
+
+pokemonDB.on( "error", function( error ) {
+	console.log( "DB ERROR", error );
 } );
 
 // Clear Previously Loaded Pokemons

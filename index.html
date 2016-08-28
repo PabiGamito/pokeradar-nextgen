@@ -44,18 +44,26 @@
           <li>Pokemon</li>
           <li>Settings</li>
         </ul>
-
-        Show pokemons:
-        <select>
-          <option value="closest">closest to me</option>
-          <option value="insight">in the current map area</option>
-        </select>
-
-        </select>
-
-        <div class="located-pokemons">
-          <!-- JS adds stuff here -->
+        <div class="settings-container">
+          Click to remove or add pokemons to the map <br>
+          <a class="select-all-pokemons">Select all</a> | <a class="deselect-all-pokemons">Deselect all</a>
+          <div class="pokemons">
+            <!-- pokemons added her through JS -->
+          </div>
         </div>
+
+        <div class="pokemon-list-container">
+          Show pokemons:
+          <select>
+            <option value="closest">closest to me</option>
+            <option value="insight">in the current map area</option>
+          </select>
+
+          <div class="located-pokemons">
+            <!-- JS adds stuff here -->
+          </div>
+        </div>
+
       </div>
     </aside>
 
