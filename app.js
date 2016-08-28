@@ -86,14 +86,50 @@ function showPokemonsInSideMenu() {
 		} );
 }
 
+function sortByClosestFromLocation( a, b ) {
+	if ( a.distanceFromLocation < b.distanceFromLocation )
+		return -1;
+	if ( a.distanceFromLocation > b.distanceFromLocation )
+		return 1;
+	return 0;
+}
+
+function sortByClosestFromCenter( a, b ) {
+	if ( a.distanceFromCenter < b.distanceFromCenter )
+		return -1;
+	if ( a.distanceFromCenter > b.distanceFromCenter )
+		return 1;
+	return 0;
+}
+
 function addLocatedPokemonsToSideBar( pokemons ) {
+
+	if ( locationMarker === undefined ) {
+		pokemons.sort( sortByClosestFromCenter );
+	} else {
+		pokemons.sort( sortByClosestFromLocation );
+	}
+
 	$( '.located-pokemons' ).html( "" );
 	for ( i = 0; i < pokemons.length; i++ ) {
 		var pokemon = pokemons[ i ];
+		var distance;
+		if ( locationMarker === undefined ) {
+			distance = "";
+		} else {
+			distance = pokemon.distanceFromLocation;
+			if ( distance < 100 ) {
+				distance = Math.round( distance ) + "m";
+			} else if ( distance < 1000 ) { // < 1km
+				distance = Math.round( distance / 10 ) * 10 + "m";
+			} else { // > 1 km
+				distance = Math.round( distance / 1000 ) + "km";
+			}
+		}
 		$( '.located-pokemons' ).append( '<div class="pokemon">' +
 			'<img src="http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemon.id ).slice( -3 ) + '.png"' + '"/>' +
 			"<h3>" + pokemonNames[ pokemon.id ].capitalize() + "</h3>" +
-			pokemon.lat.toFixed( 5 ) + " " + pokemon.lng.toFixed( 5 ) +
+			pokemon.lat.toFixed( 5 ) + " " + pokemon.lng.toFixed( 5 ) + " " + distance +
 			"</div>" );
 	}
 }
