@@ -2,8 +2,7 @@
 var pokemonDB = new Dexie( "pokemonDB" );
 
 pokemonDB.version( 1 ).stores( {
-	loadedPokemons: 'id, pokemonId, created',
-	pokemons: 'id, name',
+	loadedPokemons: 'id, pokemonId, created, [lat+lng]',
 	settings: 'option, value'
 } );
 
@@ -37,7 +36,7 @@ try {
 // INITIALIZE POKEMON DB //
 // ********************* //
 
-var pokemons = {
+var pokemonNames = {
 	1: "Bulbasaur",
 	2: "Ivysaur",
 	3: "Venusaur",
@@ -191,16 +190,16 @@ var pokemons = {
 	151: "Mew" //- not yet available
 };
 
-Object.keys( pokemons ).forEach( function( pokemonId ) {
-	try {
-		pokemonDB.pokemons.put( {
-			"id": parseInt( pokemonId ),
-			"name": pokemons[ pokemonId ]
-		} );
-	} catch ( e ) {
-
-	} finally {
-		// if there was an error adding pokemon data to database try to update pokemon data if needed
-		// Check first pokemon and if all data matches assume no changes need to be made to rest either
-	}
-} );
+// Object.keys( pokemons ).forEach( function( pokemonId ) {
+// 	try {
+// 		pokemonDB.pokemons.put( {
+// 			"id": parseInt( pokemonId ),
+// 			"name": pokemons[ pokemonId ]
+// 		} );
+// 	} catch ( e ) {
+//
+// 	} finally {
+// 		// if there was an error adding pokemon data to database try to update pokemon data if needed
+// 		// Check first pokemon and if all data matches assume no changes need to be made to rest either
+// 	}
+// } );

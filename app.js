@@ -1,24 +1,62 @@
 // Toggle side menu
 $( ".open-side-menu" ).click( function() {
 	if ( $( "#app-container" ).css( "margin-left" ) === "0px" ) {
-		$( "#app-container" ).animate( {
-			marginLeft: $( "#side-menu" ).width()
-		} );
-		$( ".fixed-action-btn" ).animate( {
-			marginLeft: $( "#side-menu" ).width()
-		} );
+		openSideMenu();
 	} else {
-		$( "#app-container" ).animate( {
-			marginLeft: 0
-		} );
-		$( ".fixed-action-btn" ).animate( {
-			marginLeft: 0
-		} );
+		closeSideMenu();
 	}
 } );
 
+// TODO: make this work
+$( "#app-container" ).on( "swiperight", function() {
+	openSideMenu();
+} );
+$( "#app-container" ).on( "swipeleft", function() {
+	closeSideMenu();
+} );
+
+$( ".close-side-menu" ).click( function() {
+	closeSideMenu();
+} );
+
+$( "#map" ).click( function( e ) {
+	var clickedElement = e.target;
+	if ( !clickedElement.classList.contains( 'btn-floating' ) ) {
+		closeSideMenu();
+	}
+} );
+
+function openSideMenu() {
+	$( "#app-container" ).animate( {
+		marginLeft: $( "#side-menu" ).width()
+	} );
+	$( ".fixed-action-btn" ).animate( {
+		marginLeft: $( "#side-menu" ).width()
+	} );
+	$( "#side-menu" ).animate( {
+		marginLeft: $( "#side-menu" ).width()
+	} );
+}
+
+function closeSideMenu() {
+	$( "#app-container" ).animate( {
+		marginLeft: 0
+	} );
+	$( ".fixed-action-btn" ).animate( {
+		marginLeft: 0
+	} );
+	$( "#side-menu" ).animate( {
+		marginLeft: 0
+	} );
+}
+
+$( ".show-located-pokemons" ).click( function() {
+	showPokemonsInSideMenu();
+} );
+
 // List Pokemons in Side Menu
-function loadPokemons() {
+function showPokemonsInSideMenu() {
+	var sideMenuPokemons = [];
 	pokemonDB.loadedPokemons
 		.where( "created" )
 		.between( Math.floor( Date.now() / 1000 ) - 60 * 15, Date.now(), false, true ) // false = first param not included when searching
@@ -26,9 +64,38 @@ function loadPokemons() {
 		.then( function( pokemons ) {
 			for ( i = 0; i < pokemons.length; i++ ) {
 				var pokemon = pokemons[ i ];
-				console.log( "Pokemon", pokemon );
+				var pokemonLatLng = {
+					"lat": pokemon.lat,
+					"lng": pokemon.lng
+				};
+				var distanceFromLocation;
+				if ( locationMarker === undefined ) {
+					distanceFromLocation = "N/A";
+				} else {
+					distanceFromLocation = distanceBetween( locationMarker.getLatLng(), pokemonLatLng );
+				}
+				sideMenuPokemons.push( {
+					"id": pokemon.pokemonId,
+					"lat": pokemon.lat,
+					"lng": pokemon.lng,
+					"distanceFromLocation": distanceFromLocation,
+					"distanceFromCenter": distanceBetween( map.getCenter(), pokemonLatLng ),
+				} );
 			}
+			addLocatedPokemonsToSideBar( sideMenuPokemons );
 		} );
+}
+
+function addLocatedPokemonsToSideBar( pokemons ) {
+	$( '.located-pokemons' ).html( "" );
+	for ( i = 0; i < pokemons.length; i++ ) {
+		var pokemon = pokemons[ i ];
+		$( '.located-pokemons' ).append( '<div class="pokemon">' +
+			'<img src="http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemon.id ).slice( -3 ) + '.png"' + '"/>' +
+			"<h3>" + pokemonNames[ pokemon.id ].capitalize() + "</h3>" +
+			pokemon.lat.toFixed( 5 ) + " " + pokemon.lng.toFixed( 5 ) +
+			"</div>" );
+	}
 }
 
 // Distance From Coordiantes Calculator

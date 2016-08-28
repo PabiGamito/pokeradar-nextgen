@@ -18,6 +18,30 @@ body {
   background: white;
   overflow-y: auto;
 }
+#side-menu .located-pokemons .pokemon {
+  border-bottom: 1px solid black;
+  height: 50px;
+}
+#side-menu .located-pokemons .pokemon img {
+  float: left;
+  width: 50px;
+  height: 50px;
+  border-right: 1px solid black;
+}
+#side-menu .located-pokemons .pokemon h3 {
+  font-size: 20px;
+  padding: 0;
+  margin: 0;
+}
+#side-menu .container {
+  padding: 10px;
+  margin: 0;
+  width: 100%;
+}
+#side-menu .close-side-menu {
+  float: right;
+  color: black;
+}
 
 .fixed-action-btn {
   width: 55px;

@@ -73,6 +73,7 @@ map.addLayer( markerClusters );
 
 // LOCATION AND LOAD POKEMONS
 var locationMarker;
+var locationCircle;
 
 map.locate( {
 		setView: true,
@@ -82,31 +83,36 @@ map.locate( {
 	.on( 'locationfound', function( e ) {
 		try {
 			map.removeLayer( locationMarker );
+			map.removeLayer( locationCircle );
 		} catch ( err ) {
 			console.log( err );
 		}
+		map.setView( [ e.latitude, e.longitude ], 17 );
+
+		// TODO: Use circle marker instead http://leafletjs.com/reference.html#circlemarke
 		var locationIcon = L.icon( {
 			iconUrl: 'img/icons/locationIcon.png',
 			iconSize: [ 16, 16 ], // size of the icon
 		} );
-		map.setView( [ e.latitude, e.longitude ], 17 );
 		locationMarker = L.marker( [ e.latitude, e.longitude ], {
 			"icon": locationIcon
 		} );
-		var circle = L.circle( [ e.latitude, e.longitude ], e.accuracy, {
+		locationCircle = L.circle( [ e.latitude, e.longitude ], e.accuracy, {
 			weight: 1,
-			color: 'blue',
+			// color: 'blue',
+			stroke: false,
 			fillColor: '#cacaca',
-			fillOpacity: 0.2
+			fillOpacity: 0.5
 		} );
 		map.addLayer( locationMarker );
-		map.addLayer( circle );
+		map.addLayer( locationCircle );
 
 		refreshPokemons();
 		StartAutoUpdates();
 	} )
 	.on( 'locationerror', function( e ) {
 		console.log( e );
+		$( ".locateControl" ).addClass( "disabled" );
 		refreshPokemons();
 		StartAutoUpdates();
 	} );

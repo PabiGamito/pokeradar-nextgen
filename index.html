@@ -12,6 +12,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 
     <!-- http://materializecss.com/ -->
     <!-- Include Materialized -->
@@ -29,17 +31,23 @@
         <i class="fa fa-bars" aria-hidden="true" style="color: black;"></i>
       </a>
       <ul>
-        <li><a class="btn-floating white open-side-menu"><i class="fa fa-list-ul" aria-hidden="true"></i></a></li>
+        <li><a class="btn-floating white open-side-menu show-located-pokemons"><i class="fa fa-list-ul" aria-hidden="true"></i></a></li>
         <li><a class="btn-floating white open-side-menu"><i class="fa fa-cog" aria-hidden="true"></i></a></li>
       </ul>
     </div>
 
     <!-- Sidemenu -->
     <aside id="side-menu">
-      <i class="fa fa-times close-side-menu" aria-hidden="true" style="float: right; color: black;"></i>
-      <ul>
-        <li>Pokemon</li>
-      </ul>
+      <div class="container">
+        <i class="close-side-menu fa fa-times close-side-menu" aria-hidden="true"></i>
+        <ul>
+          <li>Pokemon</li>
+          <li>Settings</li>
+        </ul>
+        <div class="located-pokemons">
+
+        </div>
+      </div>
     </aside>
 
     <!-- Map -->
@@ -74,10 +82,9 @@
     <script src="https://npmcdn.com/dexie@latest/dist/dexie.js"></script>
 
     <!-- Include App.js -->
+    <script type="text/javascript" src="localpokemonDB.js"></script>
     <script type="text/javascript" src="loadMap.js"></script>
     <script type="text/javascript" src="app.js"></script>
-
-    <script type="text/javascript" src="localpokemonDB.js"></script>
     <script type="text/javascript" src="pokeradar.js"></script>
 
   </body>

@@ -59,13 +59,11 @@ function timeLeft( pokemonCreatedTs ) {
 }
 
 function loadPopupContent( marker, pokemonData ) {
-	pokemonDB.pokemons.get( pokemonData.pokemonId ).then( function( pokemon ) {
-		vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
-		marker._popup.setContent( "<h3>" + pokemon.name.capitalize() + "</h3>" +
-			"<p>" + pokemonData.upvotes + "/" + ( pokemonData.downvotes + pokemonData.upvotes ) + " - " + Math.round( vote_ratio * 100 * 100 ) / 100 + "%" + "</p>" +
-			"<p>" + pokemonData.latitude.toFixed( 5 ) + " " + pokemonData.longitude.toFixed( 5 ) + "</p>" + // coordinates decimal place accuracy http://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
-			'<i class="fa fa-thumbs-down" aria-hidden="true"></i>' + '<i class="fa fa-thumbs-up" aria-hidden="true"></i>' );
-	} );
+	vote_ratio = pokemonData.upvotes / ( pokemonData.downvotes + pokemonData.upvotes );
+	marker._popup.setContent( "<h3>" + pokemonNames[ pokemonData.pokemonId ].capitalize() + "</h3>" +
+		"<p>" + pokemonData.upvotes + "/" + ( pokemonData.downvotes + pokemonData.upvotes ) + " - " + Math.round( vote_ratio * 100 * 100 ) / 100 + "%" + "</p>" +
+		"<p>" + pokemonData.latitude.toFixed( 5 ) + " " + pokemonData.longitude.toFixed( 5 ) + "</p>" + // coordinates decimal place accuracy http://gis.stackexchange.com/questions/8650/measuring-accuracy-of-latitude-and-longitude/8674#8674
+		'<i class="fa fa-thumbs-down" aria-hidden="true"></i>' + '<i class="fa fa-thumbs-up" aria-hidden="true"></i>' );
 }
 
 function addPokemonToMap( pokemonData ) {
@@ -78,48 +76,54 @@ function addPokemonToMap( pokemonData ) {
 	} else {
 		confirmedCircle = '<i class="fa fa-times-circle" aria-hidden="true"></i> ';
 	}
-	pokemonDB.loadedPokemons.get( pokemonData.id ).then( function( pokemon ) {
-		var marker;
-		if ( pokemon ) {
-			// if Pokemon already loaded + saved in loadedPokemons table
-			for ( i = 0; i < markersList.length; i++ ) {
-				if ( markersList[ i ].id === pokemonData.id ) {
-					marker = markersList[ i ].marker;
-					loadPopupContent( marker, pokemonData );
+	pokemonDB.loadedPokemons
+		.where( '[lat+lng]' )
+		.equals( [ pokemonData.latitude, pokemonData.longitude ] )
+		.first()
+		.then( function( pokemon ) {
+			var marker;
+			if ( pokemon ) {
+				// if Pokemon already loaded + saved in loadedPokemons table
+				for ( i = 0; i < markersList.length; i++ ) {
+					if ( markersList[ i ].id === pokemonData.id ) {
+						marker = markersList[ i ].marker;
+						loadPopupContent( marker, pokemonData );
+					}
 				}
+			} else {
+				// if Pokemon not already loaded + not saved in loadedPokemons table
+				marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
+					icon: L.icon( {
+						iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
+						iconSize: [ 64, 64 ]
+					} )
+				} ).bindLabel( confirmedCircle + '<span created="' + pokemonData.created + '">' + timeLeft( pokemonData.created ) + '</span>', {
+					noHide: true,
+					offset: [ -20, 20 ],
+					className: "pokemonLabel"
+				} );
+				marker.bindPopup( "Loading" );
+				loadPopupContent( marker, pokemonData );
+
+				markersList.push( {
+					"id": pokemonData.id,
+					"marker": marker,
+					"created": pokemonData.created
+				} );
+
+				pokemonDB.loadedPokemons.put( {
+					"id": pokemonData.id,
+					"pokemonId": pokemonData.pokemonId,
+					"created": pokemonData.created,
+					"lat": pokemonData.latitude,
+					"lng": pokemonData.longitude
+						// "marker": marker
+				} );
+
+				markerClusters.addLayer( marker );
+
 			}
-		} else {
-			// if Pokemon not already loaded + not saved in loadedPokemons table
-			marker = L.marker( [ pokemonData.latitude, pokemonData.longitude ], {
-				icon: L.icon( {
-					iconUrl: 'http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + pokemonData.pokemonId ).slice( -3 ) + '.png',
-					iconSize: [ 64, 64 ]
-				} )
-			} ).bindLabel( confirmedCircle + '<span created="' + pokemonData.created + '">' + timeLeft( pokemonData.created ) + '</span>', {
-				noHide: true,
-				offset: [ -20, 20 ],
-				className: "pokemonLabel"
-			} );
-			marker.bindPopup( "Loading" );
-			loadPopupContent( marker, pokemonData );
-
-			markersList.push( {
-				"id": pokemonData.id,
-				"marker": marker,
-				"created": pokemonData.created
-			} );
-
-			pokemonDB.loadedPokemons.put( {
-				"id": pokemonData.id,
-				"pokemonId": pokemonData.pokemonId,
-				"created": pokemonData.created
-					// "marker": marker
-			} );
-
-			markerClusters.addLayer( marker );
-
-		}
-	} );
+		} );
 }
 
 function refreshPokemons() {
