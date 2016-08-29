@@ -106,10 +106,10 @@ body {
   margin: 10px 10px 0 0;
 }
 .leaflet-control.btn-floating:after {
+  display: inline-block;
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%);
 }
 .zoomInControl:after {
   font-family:FontAwesome;
@@ -131,4 +131,28 @@ body {
 }
 .locateControl.disabled:after {
   opacity: 0.4;
+}
+.locateControl.loading:after {
+  left: 0;
+  left: 11px;
+  content: '\f1ce';
+  -webkit-animation:spin 4s linear infinite;
+     -moz-animation:spin 4s linear infinite;
+          animation:spin 4s linear infinite;
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+
+.locateControl.enabled:after {
+  color: #00688B;
 }

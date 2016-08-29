@@ -47,10 +47,28 @@ var locateControl = L.Control.extend( {
 		position: 'topright'
 	},
 	onAdd: function( map ) {
-		var container = L.DomUtil.create( 'div', 'btn-floating white locateControl' );
+		var container = L.DomUtil.create( 'div', 'btn-floating white locateControl enabled' );
 
 		container.onclick = function() {
-			map.setView( locationMarker.getLatLng(), 17 );
+			var $locateControl = $( ".locateControl" );
+			if ( $locateControl.hasClass( 'enabled' ) ) {
+				console.log( locationMarker.getLatLng(), map.getCenter() );
+				// if ( locationMarker.getLatLng() === map.getCenter() ) {
+				// if location marker already in center of map stopLocate
+				try {
+					map.stopLocate();
+					map.removeLayer( locationMarker );
+					map.removeLayer( locationCircle );
+				} finally {
+					$locateControl.removeClass( "enabled" );
+				}
+				// } else {
+				// 	map.setView( locationMarker.getLatLng(), 17 );
+				// }
+			} else {
+				$locateControl.addClass( "enabled" );
+				locateUser();
+			}
 		};
 		return container;
 	}
@@ -75,46 +93,63 @@ map.addLayer( markerClusters );
 var locationMarker;
 var locationCircle;
 
-map.locate( {
-		setView: true,
-		watch: true,
-		maxZoom: 17
-	} )
-	.on( 'locationfound', function( e ) {
-		try {
-			map.removeLayer( locationMarker );
-			map.removeLayer( locationCircle );
-		} catch ( err ) {
-			// Markers have not yet been set = first locate find
-			map.setView( [ e.latitude, e.longitude ], 17 );
-		}
+function locateUser() {
+	$( ".locateControl" ).addClass( "loading" );
 
-		// TODO: Use circle marker instead http://leafletjs.com/reference.html#circlemarke
-		var locationIcon = L.icon( {
-			iconUrl: 'img/icons/locationIcon.png',
-			iconSize: [ 16, 16 ], // size of the icon
-		} );
-		locationMarker = L.marker( [ e.latitude, e.longitude ], {
-			"icon": locationIcon
-		} );
-		locationCircle = L.circle( [ e.latitude, e.longitude ], e.accuracy, {
-			weight: 1,
-			// color: 'blue',
-			stroke: false,
-			fillColor: '#cacaca',
-			fillOpacity: 0.5
-		} );
-		map.addLayer( locationMarker );
-		map.addLayer( locationCircle );
+	map.locate( {
+			setView: true,
+			watch: true,
+			maxZoom: 17
+		} )
+		.on( 'locationfound', function( e ) {
+			try {
+				map.removeLayer( locationMarker );
+				map.removeLayer( locationCircle );
+			} catch ( err ) {
+				// Markers have not yet been set = first locate find, but not limited to this condition
+				if ( !autoUpdatesStarted ) {
+					StartAutoUpdates();
+				}
+			}
 
-		refreshPokemons();
-		StartAutoUpdates();
-	} )
-	.on( 'locationerror', function( e ) {
-		console.log( e );
-		var santaMonica = [ 34.0091, -118.4970 ];
-		map.setView( santaMonica, 16 );
-		$( ".locateControl" ).addClass( "disabled" );
-		refreshPokemons();
-		StartAutoUpdates();
-	} );
+			if ( $( ".locateControl" ).hasClass( "enabled" ) ) {
+				map.setView( [ e.latitude, e.longitude ], 17 );
+			}
+
+			// TODO: Use circle marker instead http://leafletjs.com/reference.html#circlemarke
+			var locationIcon = L.icon( {
+				iconUrl: 'img/icons/locationIcon.png',
+				iconSize: [ 16, 16 ], // size of the icon
+			} );
+			locationMarker = L.marker( [ e.latitude, e.longitude ], {
+				"icon": locationIcon
+			} );
+			locationCircle = L.circle( [ e.latitude, e.longitude ], e.accuracy, {
+				weight: 1,
+				// color: 'blue',
+				stroke: false,
+				fillColor: '#cacaca',
+				fillOpacity: 0.5
+			} );
+			map.addLayer( locationMarker );
+			map.addLayer( locationCircle );
+
+			$( ".locateControl" ).removeClass( "loading" );
+
+			refreshPokemons();
+		} )
+		.on( 'locationerror', function( e ) {
+			$( ".locateControl" ).removeClass( "enabled" ).removeClass( "loading" );
+			if ( autoUpdatesStarted ) {
+				alert( e );
+			} else {
+				var santaMonica = [ 34.0091, -118.4970 ];
+				map.setView( santaMonica, 16 );
+				$( ".locateControl" ).addClass( "disabled" );
+				refreshPokemons();
+				StartAutoUpdates();
+			}
+		} );
+}
+
+locateUser();

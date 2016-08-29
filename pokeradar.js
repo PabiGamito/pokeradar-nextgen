@@ -2,6 +2,7 @@ var pokemonsToShow = [ "" ];
 var markersList = [];
 var savePokemonData;
 var refreshPokemonsInProgress = false;
+var autoUpdatesStarted = false;
 
 function parsePokemonId( id ) {
 	var idParts = id.split( "-" );
@@ -241,6 +242,7 @@ function lng() {
 
 // LOAD POKEMONS ON MAP
 function StartAutoUpdates() {
+	autoUpdatesStarted = true;
 	// UPDATES
 	map.on( 'moveend', function() {
 		refreshPokemons();
