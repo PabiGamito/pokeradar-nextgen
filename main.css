@@ -6,6 +6,7 @@ body {
 #app-container {
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
 #side-menu {
@@ -36,7 +37,8 @@ body {
 }
 #side-menu .settings-container .pokemons img {
   width: 80px;
-  float: left;
+  display: block;
+  margin: auto;
 }
 #side-menu .located-pokemons .pokemon {
   border-bottom: 1px solid black;
@@ -126,4 +128,7 @@ body {
   content:'\f21d';
   color: black;
   font-size: 16px;
+}
+.locateControl.disabled:after {
+  opacity: 0.4;
 }

@@ -85,9 +85,9 @@ map.locate( {
 			map.removeLayer( locationMarker );
 			map.removeLayer( locationCircle );
 		} catch ( err ) {
-			console.log( err );
+			// Markers have not yet been set = first locate find
+			map.setView( [ e.latitude, e.longitude ], 17 );
 		}
-		map.setView( [ e.latitude, e.longitude ], 17 );
 
 		// TODO: Use circle marker instead http://leafletjs.com/reference.html#circlemarke
 		var locationIcon = L.icon( {
@@ -114,7 +114,6 @@ map.locate( {
 		console.log( e );
 		var santaMonica = [ 34.0091, -118.4970 ];
 		map.setView( santaMonica, 16 );
-		// TODO: findout with this isn't working
 		$( ".locateControl" ).addClass( "disabled" );
 		refreshPokemons();
 		StartAutoUpdates();
