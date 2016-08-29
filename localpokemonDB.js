@@ -2,7 +2,7 @@
 var pokemonDB = new Dexie( "pokemonDB" );
 
 pokemonDB.version( 1 ).stores( {
-	loadedPokemons: 'id, created, [pokemonId+lat+lng], userId',
+	loadedPokemons: 'id, created, userId, pokemonId, [pokemonId+lat+lng]',
 	settings: 'option, value'
 } );
 

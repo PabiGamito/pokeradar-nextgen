@@ -56,41 +56,36 @@ $( ".show-located-pokemons" ).click( function() {
 
 $( ".select-all-pokemons" ).click( function() {
 	$( ".settings-container .pokemons .pokemon" ).addClass( "selected" );
-	pokemonsToShow = [ "" ];
+	pokemonsToShow = rangeArray( 152 );
+	refreshPokemons();
 } );
 
 $( ".deselect-all-pokemons" ).click( function() {
 	$( ".settings-container .pokemons .pokemon" ).removeClass( "selected" );
 	pokemonDB.loadedPokemons.clear().then( function() {
+		latestPokemonsToShow = pokemonsToShow;
+
 		for ( i = 0; i < markersList.length; i++ ) {
+			console.log( "Removing" );
 			map.removeLayer( markersList[ i ].marker );
 		}
 		markersList = [];
 		pokemonsToShow = [];
-		refreshPokemons();
 	} );
 } );
 
-// TODO: FIND OUT WHY THIS ISN'T WORKING
-$( ".settings-container .pokemons .pokemon:not(.selected)" ).click( function() {
+// Add and remove pokemons from Pokemons to Show
+
+$( '.settings-container .pokemons' ).on( 'click', '.pokemon:not(.selected)', function() {
+	$( this ).addClass( "selected" );
 	pokemonsToShow.push( parseInt( $( this ).attr( "pokemonId" ) ) );
+	refreshPokemons();
 } );
-$( ".settings-container" ).find( ".pokemons .pokemon.selected" ).click( function() {
-	alert( "Clicked" );
+
+$( '.settings-container .pokemons' ).on( 'click', '.pokemon.selected', function() {
+	$( this ).removeClass( "selected" );
 	var pokemonId = parseInt( $( this ).attr( "pokemonId" ) );
-	pokemonDB.loadedPokemons.where( "pokemonId" ).equals( pokemonId ).delete().then( function() {
-		for ( i = 0; i < markersList.length; i++ ) {
-			if ( markersList[ i ].pokemonId === pokemonId ) {
-				map.removeLayer( markersList[ i ].marker );
-			}
-		}
-		for ( var i = pokemonsToShow.length - 1; i >= 0; i-- ) {
-			if ( pokemonsToShow[ i ] === pokemonId || pokemonsToShow[ i ] === "" ) {
-				array.splice( i, 1 );
-			}
-		}
-		refreshPokemons();
-	} );
+	removePokemonsFromMap( pokemonId );
 } );
 
 var $settingPokemonList = $( ".settings-container .pokemons" );
@@ -98,7 +93,7 @@ Object.keys( pokemonNames ).forEach( function( key ) {
 	$settingPokemonList.append( '<div class="pokemon" pokemonId="' + key + '"><img src="http://assets.pokemon.com/assets/cms2/img/pokedex/detail/' + ( "00" + key ).slice( -3 ) + '.png" /><span>' + pokemonNames[ key ] + '</span></div>' );
 } );
 // Add selected class to those selected
-if ( pokemonsToShow[ 0 ] === "" ) {
+if ( pokemonsToShow.length === 152 ) {
 	$( ".settings-container .pokemons .pokemon" ).addClass( "selected" );
 } else {
 	for ( i = 0; i < pokemonsToShow.length; i++ ) {

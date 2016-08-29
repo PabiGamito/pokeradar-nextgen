@@ -1,4 +1,8 @@
-var pokemonsToShow = [ "" ];
+var pokemonsToShow = rangeArray( 152 );
+
+function rangeArray( i ) {
+	return i ? rangeArray( i - 1 ).concat( i ) : []
+}
 var markersList = [];
 var savePokemonData;
 var refreshPokemonsInProgress = false;
@@ -27,7 +31,9 @@ function findPokemon( pokemonId, minLatitude, maxLatitude, minLongitude, maxLong
 					data[ i ].id = parsePokemonId( data[ i ].id );
 				}
 				var lastSearchDone = false;
-				addPokemonToMap( data[ 0 ] );
+				if ( $.inArray( data[ 0 ].pokemonId, pokemonsToShow ) !== -1 ) {
+					addPokemonToMap( data[ 0 ] );
+				}
 				for ( var i = 1; i < data.length; i++ ) {
 					var pokemonData = data[ i - 1 ];
 					var newPokemonData = data[ i ];
@@ -211,16 +217,20 @@ function addPokemonToMap( pokemonData ) {
 		} );
 }
 
+var latestPokemonsToShow = pokemonsToShow;
+
 function refreshPokemons() {
-	if ( !refreshPokemonsInProgress ) {
+	if ( !refreshPokemonsInProgress && pokemonsToShow === latestPokemonsToShow ) {
 		refreshPokemonsInProgress = true;
-		for ( var i = 0; i < pokemonsToShow.length; i++ ) {
-			if ( i === pokemonsToShow.length - 1 ) {
-				findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, true );
-			} else {
-				findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, false );
-			}
-		}
+		latestPokemonsToShow = pokemonsToShow;
+		findPokemon( "", lat().min, lat().max, lng().min, lng().max, true );
+		// for ( var i = 0; i < pokemonsToShow.length; i++ ) {
+		// 	if ( i === pokemonsToShow.length - 1 ) {
+		// 		findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, true );
+		// 	} else {
+		// 		findPokemon( pokemonsToShow[ i ], lat().min, lat().max, lng().min, lng().max, false );
+		// 	}
+		// }
 	}
 }
 
@@ -278,4 +288,25 @@ function deleteExpiredPokemons() {
 			markersList.splice( i, 1 );
 		}
 	}
+}
+
+function removePokemonsFromMap( pokemonId ) {
+	pokemonDB.loadedPokemons
+		.where( "pokemonId" )
+		.equals( pokemonId )
+		.delete().then( function() {
+			for ( i = 0; i < markersList.length; i++ ) {
+				if ( markersList[ i ].pokemonId === pokemonId ) {
+					map.removeLayer( markersList[ i ].marker );
+					markersList.splice( i, 1 );
+				}
+			}
+
+			for ( i = 0; i < pokemonsToShow.length; i++ ) {
+				if ( pokemonsToShow[ i ] === pokemonId ) {
+					pokemonsToShow.splice( i, 1 );
+				}
+			}
+		} );
+
 }
